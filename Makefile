@@ -1,17 +1,11 @@
-
-CFLAGS=-Wall -O2 -g
+CFLAGS=-Wall -O2 -g -std=c++11
 LIBS=-lm
 
-SRCS=\
-	irc.c
+SRCS= \
+	  irc.cpp
 
-OBJS=$(SRCS:.c=.o)
+irc: irc.cpp
+	g++ $(CFLAGS) -o $@ $+ $(LIBS) 
 
-
-irc: $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $+ $(LIBS)
-
-irc.o: irc.c
-
-clean::
+clean:
 	$(RM) irc $(OBJS)

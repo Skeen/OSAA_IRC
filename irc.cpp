@@ -1,7 +1,7 @@
 /*
  * This file is part of OSAA IRC.
  *
- * FlyBoy is free software: you can redistribute it and/or modify it under the
+ * OSAA IRC is free software: you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
  * version.
@@ -12,8 +12,9 @@
  * details.
  *
  * You should have received a copy of the GNU General Public License along with
- * FlyBoy. If not, see <http://www.gnu.org/licenses/>.
+ * OSAA IRC. If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -37,19 +38,15 @@
 #define debug_printf(f,...)
 #endif
 
-#define XSIZE	20
-#define YSIZE	120
-/*
-#define DELAYTIMEMIN	50000
-#define DELAYTIMEMAX	250000
-#define DELAYTIMESTEP	100
-volatile int delaytime = DELAYTIMEMAX;
-*/
+#include "font.hpp"
+
+constexpr uint8_t XSIZE = 20;
+constexpr uint8_t YSIZE = 120;
+
 char backstore[YSIZE][XSIZE];
 char frontstore[YSIZE][XSIZE];
 
-
-volatile int quit = 0;
+volatile bool quit = false;
 int pfd[2];
 struct termios orig_termios;
 
@@ -70,14 +67,13 @@ int serial_open(const char *port)
 	}
 
 	tcgetattr(fd, &term_opt);
-	//cfmakeraw(&term_opt);
 	cfsetispeed(&term_opt, B38400);
 	cfsetospeed(&term_opt, B38400);
 	tcsetattr(fd, TCSAFLUSH, &term_opt);
 	return fd;
 }
 
-ssize_t xwrite(int fd, const void *p, size_t n)
+ssize_t xwrite(int fd, void *p, size_t n)
 {
 	ssize_t x;
 	size_t s = n;
@@ -95,7 +91,7 @@ ssize_t xwrite(int fd, const void *p, size_t n)
 	return s;
 }
 
-ssize_t xread(int fd, void *p, size_t n)
+ssize_t xread(int fd, char *p, size_t n)
 {
 	ssize_t x;
 	size_t s = n;
@@ -154,7 +150,7 @@ static const char usage_str[] =
 static void sighandler(int sig)
 {
 	(void)sig;
-	quit = 1;
+	quit = true;
 }
 
 static void sigalrm(int sig)
@@ -163,103 +159,6 @@ static void sigalrm(int sig)
 	(void)sig;
 	xwrite(pfd[1], &c, 1);
 }
-#define LETTER_WIDTH 5
-#define LETTER_HEIGHT 6
-
-const uint8_t A[] = {
-    0, 1, 1, 1, 0,
-    1, 0, 0, 0, 1,
-    1, 0, 0, 0, 1,
-    1, 1, 1, 1, 1,
-    1, 0, 0, 0, 1,
-    1, 0, 0, 0, 1,
-};
-
-const uint8_t B[] = {
-    1, 1, 1, 1, 0,
-    1, 0, 0, 0, 1,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 0, 0, 0, 1,
-    1, 1, 1, 1, 1,
-};
-
-const uint8_t C[] = {
-    0, 1, 1, 1, 0,
-    1, 0, 0, 0, 1,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 1,
-    0, 1, 1, 1, 0,
-};
-
-const uint8_t D[] = {
-    1, 1, 1, 1, 0,
-    1, 0, 0, 0, 1,
-    1, 0, 0, 0, 1,
-    1, 0, 0, 0, 1,
-    1, 0, 0, 0, 1,
-    1, 1, 1, 1, 0,
-};
-
-const uint8_t E[] = {
-    1, 1, 1, 1, 1,
-    1, 0, 0, 0, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-};
-
-const uint8_t F[] = {
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 0, 0, 0, 0,
-    1, 1, 1, 1, 0,
-    1, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-};
-/*
-typedef struct
-{
-    uint8_t letter_width;   // 5-6
-    uint8_t pix_map[LETTER_HEIGHT*LETTER_WIDTH];       // space array
-} Letter;
-
-Letter spacea = {
-    .letter_width = 5,
-    .pix_map = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    },
-};
-*/
-
-const uint8_t space[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-};
-
-const uint8_t error[] = {
-    0, 0, 0, 0, 0,
-    1, 0, 0, 0, 1,
-    0, 1, 0, 1, 0,
-    0, 0, 1, 0, 0,
-    0, 1, 0, 1, 0,
-    1, 0, 0, 0, 1,
-};
-
-const uint8_t* letters[] = {
-    A, B, C, space
-};
 
 void reset_tty(void)
 {
@@ -319,49 +218,67 @@ void put_string_scroll(char* str)
     put_string(SCREEN_HEIGHT - 1, str);
 }
 
-void put_letter(int char_y, int char_x, const uint8_t* letter)
+void clear_line(int line)
 {
-    int x, y;
-    for(x = 0; x < LETTER_WIDTH; x++)
+    for(int x = 0; x < XSIZE; x++)
     {
-        for(y = 0; y < LETTER_HEIGHT; y++)
+        for(int y = 0; y < LETTER_HEIGHT; y++)
         {
-            sfpix(char_y + y, char_x + x, letter[y*LETTER_WIDTH + x] & 1);
+            sfpix(y + line * (LETTER_HEIGHT + 1), x, 0);
         }
     }
 }
 
-void put_character(int char_y, int char_x, char c)
+int put_letter(int char_y, int char_x, Letter l)
 {
-    switch(c)
+    int x, y;
+    for(x = 0; x < l.letter_width; x++)
     {
-        case 'a':
-            put_letter(char_y, char_x, A);
-            break;
-        case 'b':
-            put_letter(char_y, char_x, B);
-            break;
-        case 'c':
-            put_letter(char_y, char_x, C);
-            break;
-        case 'd':
-            put_letter(char_y, char_x, D);
-            break;
-        case 'e':
-            put_letter(char_y, char_x, E);
-            break;
-        case 'f':
-            put_letter(char_y, char_x, F);
-            break;
-        case ' ':
-            put_letter(char_y, char_x, space);
-            break;
-        case '\n':
-            break;
-        default:
-            put_letter(char_y, char_x, error);
-            break;
+        for(y = 0; y < LETTER_HEIGHT; y++)
+        {
+            sfpix(char_y + y, char_x + x, l.pix_map[y*l.letter_width + x] & 1);
+        }
     }
+    return l.letter_width;
+}
+
+int put_character(int char_y, int char_x, char c)
+{
+    int index = c - 97;
+    if(index >= 0 && index < 28)
+    {
+        return put_letter(char_y, char_x, Alphabet[index]);
+    }
+    else
+    {
+        index = c - 65;
+        if(index >= 0 && index < 28)
+        {
+            return put_letter(char_y, char_x, Alphabet[index]);
+        }
+        switch(c)
+        {
+            case ' ':
+                return put_letter(char_y, char_x, space);
+                break;
+            case ',':
+                return put_letter(char_y, char_x, comma);
+                break;
+            case '.':
+                return put_letter(char_y, char_x, dot);
+                break;
+            case ':':
+                return put_letter(char_y, char_x, colon);
+                break;
+            case '\n':
+                return 0;
+                break;
+            default:
+                return put_letter(char_y, char_x, undef);
+                break;
+        }
+    }
+    return 0;
 }
 
 void render_screen(int fd)
@@ -369,13 +286,17 @@ void render_screen(int fd)
     int line, character;
     for(line = 0; line < SCREEN_HEIGHT; line++)
     {
+        clear_line(line);
+
+        int char_x = 1;
         for(character = 0; character < SCREEN_WIDTH; character++)
         {
             int char_y = 0 + line * (LETTER_HEIGHT + 1);
-            int char_x = 1 + character * (LETTER_WIDTH + 1);
-            put_character(char_y, char_x, SCREEN[line][character]);
+            char_x += put_character(char_y, char_x, SCREEN[line][character]);
+            char_x += 1;
         }
     }
+    scr_frontmap(fd);
 }
 
 int main(int argc, char *argv[])
@@ -415,13 +336,18 @@ int main(int argc, char *argv[])
 	}
 
 	if((fd = serial_open(serial_port)) < 0)
+    {
+        debug_printf("Couldn't open serial port");
 		exit(1);
+    }
 
 	/* save the original terminal setup to restore at exit */
+    /*
 	if(tcgetattr(0,&orig_termios) < 0) {
 		perror("tcgetattr terminal");
 		exit(1);
 	}
+    */
 
 	if(isatty(0)) {
 		struct termios raw;
@@ -479,7 +405,7 @@ int main(int argc, char *argv[])
 
                 case 'R':
 				    debug_printf("'R' pressed\r\n");
-                    quit = 1;
+                    quit = true;
 				    break;
 			}
         }

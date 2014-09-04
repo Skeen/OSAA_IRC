@@ -219,10 +219,6 @@ void render_screen(int fd, std::string str)
 {
     // Clear the screen
     memset(frontstore, 0, sizeof(frontstore));
-    //scr_frontmap(fd);
-
-    // Delay
-    //sleep(1);
 
     auto render_string = [](std::string str, int start_line)
     {

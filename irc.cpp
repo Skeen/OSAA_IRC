@@ -29,9 +29,9 @@
 
 #define DEBUG
 #ifdef DEBUG
-#define debug_printf	printf
+    #define debug_printf	printf
 #else
-#define debug_printf(f,...)
+    #define debug_printf(f,...)
 #endif
 
 #define DELAYTIMEMIN	50000
@@ -206,7 +206,7 @@ Letter find_letter(char c)
 {
     if(c < 0)
     {
-        debug_printf("Invalid character");
+        debug_printf("Invalid character: %c\n", c);
         return undef;
     }
     return ASCII[c];
@@ -219,10 +219,10 @@ void render_screen(int fd, std::string str)
 {
     // Clear the screen
     memset(frontstore, 0, sizeof(frontstore));
-    scr_frontmap(fd);
+    //scr_frontmap(fd);
 
     // Delay
-    sleep(1);
+    //sleep(1);
 
     auto render_string = [](std::string str, int start_line)
     {
@@ -236,7 +236,7 @@ void render_screen(int fd, std::string str)
             Letter l = find_letter(c);
 
             // If we overflow this line, by adding it, do a line break
-            if(char_x + l.letter_width > YSIZE)
+            if(char_x + l.letter_width >= YSIZE)
             {
                 char_x = 1;
                 line++;
@@ -322,17 +322,9 @@ int main(int argc, char *argv[])
 
 	if((fd = serial_open(serial_port)) < 0)
     {
-        debug_printf("Couldn't open serial port");
+        debug_printf("Couldn't open serial port\n");
 		exit(1);
     }
-
-	/* save the original terminal setup to restore at exit */
-    /*
-	if(tcgetattr(0,&orig_termios) < 0) {
-		perror("tcgetattr terminal");
-		exit(1);
-	}
-    */
 
 	if(isatty(0)) {
 		struct termios raw;

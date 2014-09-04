@@ -15,18 +15,6 @@ typedef struct
 } Letter;
 
 // Letters below
-Letter undef = {
-    .letter_width = 5,
-    .pix_map = {
-    0, 0, 1, 0, 0,
-    0, 1, 1, 1, 0,
-    0, 1, 1, 1, 0,
-    1, 1, 1, 1, 1,
-    0, 0, 1, 0, 0,
-    0, 1, 0, 1, 0,
-    },
-};
-
 Letter a = {
     .letter_width = 5,
     .pix_map = {
@@ -340,14 +328,14 @@ Letter z = {
 };
 
 Letter space = {
-    .letter_width = 4,
+    .letter_width = 2,
     .pix_map = {
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
+    0, 0,
+    0, 0,  
+    0, 0,
+    0, 0,
+    0, 0,
+    0, 0,
     },
 };
 
@@ -387,12 +375,27 @@ Letter colon = {
     },
 };
 
-Letter Alphabet[] = {
+Letter undef = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 0, 1, 0, 0,
+    0, 1, 1, 1, 0,
+    0, 1, 1, 1, 0,
+    1, 1, 1, 1, 1,
+    0, 0, 1, 0, 0,
+    0, 1, 0, 1, 0,
+    },
+};
+
+Letter Alphabet_Small[] = {
     a, b, c, d, e, f,
     g, h, i, j, k, l,
     m, n, o, p, q, r,
     s, t, u, v, w, x,
     y, z, 
 };
+
+// TODO: Add large letters
+#define Alphabet_Large Alphabet_Small
 
 #endif //FONT_HPP

@@ -15,6 +15,10 @@
  * OSAA IRC. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <list>
+#include <string>
+#include <cassert>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -37,6 +41,30 @@
 #else
 #define debug_printf(f,...)
 #endif
+
+#define DELAYTIMEMIN	50000
+#define DELAYTIMEMAX	250000
+#define DELAYTIMESTEP	100
+volatile int delaytime = DELAYTIMEMAX;
+
+void timer_start()
+{
+	struct itimerval itv;
+	itv.it_interval.tv_sec = 0;
+	itv.it_interval.tv_usec = 0;
+	itv.it_value.tv_sec = 0;
+	itv.it_value.tv_usec = delaytime;
+	setitimer(ITIMER_REAL, &itv, NULL);
+	if(delaytime > DELAYTIMEMIN)
+		delaytime -= DELAYTIMESTEP;
+}
+
+void timer_stop()
+{
+	struct itimerval itv;
+	memset(&itv, 0, sizeof(itv));
+	setitimer(ITIMER_REAL, &itv, NULL);
+}
 
 #include "font.hpp"
 
@@ -144,7 +172,10 @@ void clear(int fd)
 }
 
 static const char usage_str[] =
-	"Usage: osaa_irc [-h] <ttyDevice>\n"
+"Usage: osaa_irc [-h] <ttyDevice>\n \
+ Hook up to #osaa at freenode, via;\n \
+   tail -f ircbot/a.log | ./osaa_irc <ttyDevice>\n \
+ Assuming ircbot is running.\n"
 	;
 
 static void sighandler(int sig)
@@ -165,71 +196,8 @@ void reset_tty(void)
 	tcsetattr(0, TCSAFLUSH, &orig_termios);
 }
 
-#define SCREEN_HEIGHT 3
-#define SCREEN_WIDTH 18
-
-char SCREEN[SCREEN_HEIGHT][SCREEN_WIDTH];
-
-void scroll()
-{
-    int line;
-    int character;
-    // MOVE LINES UP
-    for(line = 1; line < SCREEN_HEIGHT; line++)
-    {
-        for(character = 0; character < SCREEN_WIDTH; character++)
-        {
-            SCREEN[line-1][character] = SCREEN[line][character];
-        }
-    }
-    // CLEAR NEW LINE
-    for(character = 0; character < SCREEN_WIDTH; character++)
-    {
-        SCREEN[SCREEN_HEIGHT - 1][character] = ' ';
-    }
-}
-
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-
-void put_string(int line, char* str)
-{
-    if(line > SCREEN_HEIGHT)
-    {
-        debug_printf("trying to write invalid line number");
-        exit(-1);
-    }
-    
-    int x;
-    for(x=0; str[x] != '\0' && x < SCREEN_WIDTH; x++)
-    {
-        SCREEN[line][x] = str[x];
-    }
-    x = MAX(0, x-1);
-    for(; x<SCREEN_WIDTH; x++)
-    {
-        SCREEN[line][x] = ' ';
-    }
-}
-
-void put_string_scroll(char* str)
-{
-    scroll();
-    put_string(SCREEN_HEIGHT - 1, str);
-}
-
-void clear_line(int line)
-{
-    for(int x = 0; x < XSIZE; x++)
-    {
-        for(int y = 0; y < LETTER_HEIGHT; y++)
-        {
-            sfpix(y + line * (LETTER_HEIGHT + 1), x, 0);
-        }
-    }
-}
-
-int put_letter(int char_y, int char_x, Letter l)
+// Function, which renders a single letter 'l' at char_y, char_x
+void put_letter(int char_y, int char_x, Letter l)
 {
     int x, y;
     for(x = 0; x < l.letter_width; x++)
@@ -239,63 +207,108 @@ int put_letter(int char_y, int char_x, Letter l)
             sfpix(char_y + y, char_x + x, l.pix_map[y*l.letter_width + x] & 1);
         }
     }
-    return l.letter_width;
 }
 
-int put_character(int char_y, int char_x, char c)
+// Look up a pixel letter, via a character
+Letter find_letter(char c)
 {
+    // Check if we're a small ASCII char
     int index = c - 97;
     if(index >= 0 && index < 28)
     {
-        return put_letter(char_y, char_x, Alphabet[index]);
+        return Alphabet_Small[index];
     }
-    else
+    // Check if we're a large ASCII char
+    index = c - 65;
+    if(index >= 0 && index < 28)
     {
-        index = c - 65;
-        if(index >= 0 && index < 28)
-        {
-            return put_letter(char_y, char_x, Alphabet[index]);
-        }
-        switch(c)
-        {
-            case ' ':
-                return put_letter(char_y, char_x, space);
-                break;
-            case ',':
-                return put_letter(char_y, char_x, comma);
-                break;
-            case '.':
-                return put_letter(char_y, char_x, dot);
-                break;
-            case ':':
-                return put_letter(char_y, char_x, colon);
-                break;
-            case '\n':
-                return 0;
-                break;
-            default:
-                return put_letter(char_y, char_x, undef);
-                break;
-        }
+        return Alphabet_Large[index];
     }
-    return 0;
+    // Check if we're something else, which is supported
+    switch(c)
+    {
+        case ' ':
+            return space;
+        case ',':
+            return comma;
+        case '.':
+            return dot;
+        case ':':
+            return colon;
+    }
+    // If we're unsupported, show this sign
+    return undef;
 }
 
-void render_screen(int fd)
-{
-    int line, character;
-    for(line = 0; line < SCREEN_HEIGHT; line++)
-    {
-        clear_line(line);
+// A list of old string
+std::list<std::string> old_lines;
 
+void render_screen(int fd, std::string str)
+{
+    // Clear the screen
+    memset(frontstore, 0, sizeof(frontstore));
+    scr_frontmap(fd);
+
+    // Delay
+    sleep(1);
+
+    auto render_string = [](std::string str, int start_line)
+    {
+        // The start line, and start x coordinate
+        int line = start_line;
         int char_x = 1;
-        for(character = 0; character < SCREEN_WIDTH; character++)
+        // Run the entire string, char by char
+        for(char& c : str)
         {
+            // Find the pixel letter corresponding to the char
+            Letter l = find_letter(c);
+
+            // If we overflow this line, by adding it, do a line break
+            if(char_x + l.letter_width > YSIZE)
+            {
+                char_x = 1;
+                line++;
+                // If we overflow the screen, skip the rest of the string
+                if(line > 2)
+                {
+                    break;
+                }
+            }
+
+            // Calculate our y coord, based upon the line, we're in
             int char_y = 0 + line * (LETTER_HEIGHT + 1);
-            char_x += put_character(char_y, char_x, SCREEN[line][character]);
+            // Do the actual printing of the character
+            put_letter(char_y, char_x, l);
+            // Move the size of this letter, and 1 character,
+            // before rendering the next character
+            char_x += l.letter_width;
             char_x += 1;
         }
+        // People who start on the line after us
+        return line+1;
+    };
+    // Write the new string
+    int end_line = render_string(str, 0);
+    // If the new string did not take up all the space,
+    // lets reload some of the old stuff, and draw that
+    for(std::string old : old_lines)
+    {
+        // Only draw, if we're inside the screen
+        if(end_line > 2)
+        {
+            break;
+        }
+        end_line = render_string(old, end_line);
     }
+    // The string we just rendered, is now an old line
+    old_lines.push_front(str);
+    // Garbage collect old_lines
+    while(old_lines.size() > 3)
+    {
+        old_lines.pop_back();
+    }
+
+    // Render!
     scr_frontmap(fd);
 }
 
@@ -366,6 +379,7 @@ int main(int argc, char *argv[])
 	}
 
     clear(fd);
+    timer_start();
 
 	while(!quit) {
 		fd_set fds;
@@ -393,30 +407,18 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-            put_string_scroll(buffer);
-            render_screen(fd);
-
-			switch(buffer[0]) {
-                case 'T':
-                    debug_printf("'space' pressed\r\n");
-                    clear(fd);
-                    put_letter(0,0,space);
-                    break;
-
-                case 'R':
-				    debug_printf("'R' pressed\r\n");
-                    quit = true;
-				    break;
-			}
+            render_screen(fd, buffer);
         }
 
         if(FD_ISSET(pfd[0], &fds)) {
             char c;
+			timer_start();
             xread(pfd[0], &c, 1);
         }
         scr_frontmap(fd);
     }
 
+    timer_stop();
 	close(fd);
 	return 0;
 }

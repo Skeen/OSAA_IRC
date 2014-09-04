@@ -19,21 +19,13 @@
 #include <string>
 #include <cassert>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <cstdio>
 #include <unistd.h>
-#include <string.h>
-#include <getopt.h>
+#include <cstring>
 #include <termios.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <errno.h>
 #include <signal.h>
-#include <sys/select.h>
 #include <sys/time.h>
-#include <math.h>
 
 #define DEBUG
 #ifdef DEBUG
@@ -78,11 +70,11 @@ volatile bool quit = false;
 int pfd[2];
 struct termios orig_termios;
 
-#define sfpix(x,y,v)	do { \
-				if((x) >= 0 && (x) < XSIZE && (y) >= 0 && (y) < YSIZE) \
-					frontstore[(y)][(x)] = (v); \
-			} while(0);
-#define iscol(x,y)	((x) >= 0 && (x) < XSIZE && (y) >= 0 && (y) < YSIZE && frontstore[(y)][(x)])
+void sfpix(uint8_t x, uint8_t y, bool v)
+{
+    if((x) >= 0 && (x) < XSIZE && (y) >= 0 && (y) < YSIZE) \
+        frontstore[(y)][(x)] = (v); \
+}
 
 int serial_open(const char *port)
 {
@@ -225,16 +217,33 @@ Letter find_letter(char c)
         return Alphabet_Large[index];
     }
     // Check if we're something else, which is supported
+    // TODO: Make an entire ascii table, where everything unsupported maps to undef
     switch(c)
     {
+        case '?':
+            return question_mark;
+        case '!':
+            return bang;
+        case '-':
+            return dash;
+        case '_':
+            return underscore;
         case ' ':
             return space;
         case ',':
             return comma;
+        case '"':
+            return quotes;
         case '.':
             return dot;
         case ':':
             return colon;
+        case ';':
+            return semi_colon;
+        case '\n':
+        case '\r':
+        case '\t':
+            return empty;
     }
     // If we're unsupported, show this sign
     return undef;

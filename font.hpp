@@ -1,11 +1,20 @@
 #ifndef FONT_HPP
 #define FONT_HPP
 
-constexpr uint8_t MAX_LETTER_WIDTH  = 6;
-constexpr uint8_t MAX_LETTER_HEIGHT = 6;
+//TODO: Move all of this into a namespace, to avoid pulluting global namespace
+//      Make the changes to irc.cpp
+
 // This is always static
 constexpr uint8_t LETTER_HEIGHT = 6;
 
+// The maximum sizes of letters
+//-----------------------------
+// This one can be changed, to support wide letteres
+constexpr uint8_t MAX_LETTER_WIDTH  = 6;
+// This one is locked! Cannot be changed, without patching irc.cpp
+constexpr uint8_t MAX_LETTER_HEIGHT = LETTER_HEIGHT;
+
+// The struct used to define letters
 typedef struct
 {
     // The width of this pix_map letter
@@ -14,7 +23,9 @@ typedef struct
     uint8_t pix_map[MAX_LETTER_HEIGHT*MAX_LETTER_WIDTH];
 } Letter;
 
-// Letters below
+//---------------//
+// Letters below //
+//---------------//
 Letter a = {
     .letter_width = 5,
     .pix_map = {
@@ -327,6 +338,83 @@ Letter z = {
     },
 };
 
+//---------------//
+// Letters above //
+//----------------//
+// Specials below //
+//----------------//
+Letter empty = {
+    .letter_width = 1,
+    .pix_map = {
+    0,
+    0,  
+    0,
+    0,
+    0,
+    0,
+    },
+};
+
+Letter dash = {
+    .letter_width = 3,
+    .pix_map = {
+    0, 0, 0,
+    0, 0, 0,
+    1, 1, 1,
+    1, 1, 1,
+    0, 0, 0,
+    0, 0, 0,
+    },
+};
+
+Letter underscore = {
+    .letter_width = 4,
+    .pix_map = {
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    1, 1, 1, 1,
+    1, 1, 1, 1,
+    },
+};
+
+Letter quotes = {
+    .letter_width = 3,
+    .pix_map = {
+    1, 0, 1,
+    1, 0, 1,
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0, 
+    },
+};
+
+Letter bang = {
+    .letter_width = 1,
+    .pix_map = {
+    1,
+    1, 
+    1,
+    1,
+    0,
+    1,
+    },
+};
+
+Letter question_mark = {
+    .letter_width = 3,
+    .pix_map = {
+    0, 1, 0,
+    1, 0, 1,
+    0, 0, 1,
+    0, 1, 0,
+    0, 0, 0,
+    0, 1, 0,
+    },
+};
+
 Letter space = {
     .letter_width = 2,
     .pix_map = {
@@ -375,6 +463,18 @@ Letter colon = {
     },
 };
 
+Letter semi_colon = {
+    .letter_width = 1,
+    .pix_map = {
+    0, 
+    0,
+    1,
+    0,
+    1,
+    1,
+    },
+};
+
 Letter undef = {
     .letter_width = 5,
     .pix_map = {
@@ -386,6 +486,12 @@ Letter undef = {
     0, 1, 0, 1, 0,
     },
 };
+
+//----------------//
+// Specials above //
+//-------------------//
+// Collections below //
+//-------------------//
 
 Letter Alphabet_Small[] = {
     a, b, c, d, e, f,

@@ -204,49 +204,12 @@ void put_letter(int char_y, int char_x, Letter l)
 // Look up a pixel letter, via a character
 Letter find_letter(char c)
 {
-    // Check if we're a small ASCII char
-    int index = c - 97;
-    if(index >= 0 && index < 28)
+    if(c < 0)
     {
-        return Alphabet_Small[index];
+        debug_printf("Invalid character");
+        return undef;
     }
-    // Check if we're a large ASCII char
-    index = c - 65;
-    if(index >= 0 && index < 28)
-    {
-        return Alphabet_Large[index];
-    }
-    // Check if we're something else, which is supported
-    // TODO: Make an entire ascii table, where everything unsupported maps to undef
-    switch(c)
-    {
-        case '?':
-            return question_mark;
-        case '!':
-            return bang;
-        case '-':
-            return dash;
-        case '_':
-            return underscore;
-        case ' ':
-            return space;
-        case ',':
-            return comma;
-        case '"':
-            return quotes;
-        case '.':
-            return dot;
-        case ':':
-            return colon;
-        case ';':
-            return semi_colon;
-        case '\n':
-        case '\r':
-        case '\t':
-            return empty;
-    }
-    // If we're unsupported, show this sign
-    return undef;
+    return ASCII[c];
 }
 
 // A list of old string
@@ -404,10 +367,7 @@ int main(int argc, char *argv[])
 		if(FD_ISSET(0, &fds)) {
             char buffer[80];
             memset(buffer, 0, sizeof(char)*80);
-			//char c;
-            //debug_printf("READING");
 			ssize_t n = read(0, &buffer, 80);
-            //debug_printf("DONE READING");
 			if(-1 == n) {
 				perror("read char");
 				exit(1);

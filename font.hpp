@@ -487,21 +487,549 @@ Letter undef = {
     },
 };
 
-//----------------//
-// Specials above //
-//-------------------//
-// Collections below //
-//-------------------//
-
-Letter Alphabet_Small[] = {
-    a, b, c, d, e, f,
-    g, h, i, j, k, l,
-    m, n, o, p, q, r,
-    s, t, u, v, w, x,
-    y, z, 
+Letter hash = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 0, 0, 0, 0,
+    0, 0, 1, 0, 1,
+    1, 1, 1, 1, 1,
+    0, 1, 0, 1, 0,
+    1, 1, 1, 1, 1,
+    1, 0, 1, 0, 0,
+    },
 };
 
-// TODO: Add large letters
-#define Alphabet_Large Alphabet_Small
+Letter dollar = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 1, 1, 1, 0,
+    1, 0, 1, 0, 1,
+    1, 1, 1, 0, 0,
+    0, 0, 1, 1, 1,
+    1, 0, 1, 0, 1,
+    0, 1, 1, 1, 0,
+    },
+};
+
+Letter precentage = {
+    .letter_width = 5,
+    .pix_map = {
+    1, 1, 0, 0, 1,
+    1, 1, 0, 1, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 1, 0, 1, 1,
+    1, 0, 0, 1, 1,
+    },
+};
+
+Letter and_sign = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 1, 1, 0, 0,
+    1, 0, 0, 1, 0,
+    0, 1, 1, 0, 0,
+    0, 1, 1, 1, 1,
+    1, 0, 0, 1, 0,
+    0, 1, 1, 1, 1,
+    },
+};
+
+Letter single_quote = {
+    .letter_width = 1,
+    .pix_map = {
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    },
+};
+
+Letter lparen = {
+    .letter_width = 2,
+    .pix_map = {
+    0, 1,
+    1, 0,
+    1, 0,
+    1, 0,
+    1, 0,
+    0, 1,
+    },
+};
+
+Letter rparen = {
+    .letter_width = 2,
+    .pix_map = {
+    1, 0,
+    0, 1,
+    0, 1,
+    0, 1,
+    0, 1,
+    1, 0,
+    },
+};
+
+Letter star = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 0, 1, 0, 0,
+    1, 0, 1, 0, 1,
+    0, 1, 1, 1, 0,
+    1, 0, 1, 0, 1,
+    0, 0, 1, 0, 0,
+    0, 0, 0, 0, 0,
+    },
+};
+
+Letter plus = {
+    .letter_width = 3,
+    .pix_map = {
+    0, 0, 0,
+    0, 0, 0,
+    0, 1, 0,
+    1, 1, 1,
+    0, 1, 0,
+    0, 0, 0,
+    },
+};
+
+Letter slash = {
+    .letter_width = 3,
+    .pix_map = {
+    0, 0, 1,
+    0, 0, 1,
+    0, 1, 0,
+    0, 1, 0,
+    1, 0, 0,
+    1, 0, 0,
+    },
+};
+
+Letter back_slash = {
+    .letter_width = 3,
+    .pix_map = {
+    1, 0, 0,
+    1, 0, 0,
+    0, 1, 0,
+    0, 1, 0,
+    0, 0, 1,
+    0, 0, 1,
+    },
+};
+
+Letter zero = {
+    .letter_width = 4,
+    .pix_map = {
+    0, 1, 1, 0,
+    1, 1, 0, 1,
+    1, 0, 0, 1,
+    1, 0, 0, 1,
+    1, 0, 0, 1,
+    0, 1, 1, 0,
+    },
+};
+
+Letter one = {
+    .letter_width = 4,
+    .pix_map = {
+    0, 1, 1, 0,
+    1, 1, 1, 0,
+    0, 1, 1, 0,
+    0, 1, 1, 0,
+    0, 1, 1, 0,
+    1, 1, 1, 1,
+    },
+};
+
+Letter two = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 1, 1, 1, 0,
+    1, 1, 0, 0, 1,
+    0, 0, 0, 0, 1,
+    0, 1, 1, 1, 0,
+    1, 1, 0, 0, 0,
+    1, 1, 1, 1, 1,
+    },
+};
+
+Letter three = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 1, 1, 1, 0,
+    1, 1, 0, 0, 1,
+    0, 0, 0, 1, 0,
+    0, 0, 0, 1, 1,
+    1, 1, 0, 0, 1,
+    0, 1, 1, 1, 0,
+    },
+};
+
+Letter four = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 0, 0, 1, 0,
+    0, 0, 1, 1, 0,
+    0, 1, 0, 1, 0,
+    1, 1, 1, 1, 1,
+    0, 0, 0, 1, 0,
+    0, 0, 0, 1, 0,
+    },
+};
+
+Letter five = {
+    .letter_width = 5,
+    .pix_map = {
+    1, 1, 1, 1, 1,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 1, 1, 1, 0,
+    0, 0, 0, 0, 1,
+    1, 1, 1, 1, 0,
+    },
+};
+
+Letter six = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 1, 1, 1, 1,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 1, 1, 1, 0,
+    1, 0, 0, 0, 1,
+    0, 1, 1, 1, 0,
+    },
+};
+
+Letter seven = {
+    .letter_width = 5,
+    .pix_map = {
+    1, 1, 1, 1, 1,
+    0, 0, 0, 0, 1,
+    0, 0, 0, 1, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 1, 0, 0,
+    },
+};
+
+Letter eight = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 1, 1, 1, 0,
+    1, 0, 0, 0, 1,
+    0, 1, 1, 1, 0,
+    0, 1, 1, 1, 0,
+    1, 0, 0, 0, 1,
+    0, 1, 1, 1, 0,
+    },
+};
+
+Letter nine = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 1, 1, 1, 0,
+    1, 0, 0, 0, 1,
+    0, 1, 1, 1, 1,
+    0, 0, 0, 0, 1,
+    0, 0, 0, 0, 1,
+    0, 1, 1, 1, 0,
+    },
+};
+
+Letter ltub = {
+    .letter_width = 3,
+    .pix_map = {
+    0, 0, 1,
+    0, 1, 0,
+    1, 1, 0,
+    1, 1, 0,
+    0, 1, 0,
+    0, 0, 1,
+    },
+};
+
+Letter line = {
+    .letter_width = 1,
+    .pix_map = {
+    1, 
+    1, 
+    1,
+    1,
+    1, 
+    1, 
+    },
+};
+
+Letter lt = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 0, 0,
+    0, 0, 1,
+    0, 1, 0,
+    1, 0, 0,
+    0, 1, 0,
+    0, 0, 1,
+    },
+};
+
+Letter gt = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 0, 0,
+    1, 0, 0,
+    0, 1, 0,
+    0, 0, 1,
+    0, 1, 0,
+    1, 0, 0,
+    },
+};
+
+Letter eq = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 0, 0,
+    0, 0, 0,
+    1, 1, 1,
+    0, 0, 0,
+    1, 1, 1,
+    0, 0, 0,
+    },
+};
+
+
+Letter at = {
+    .letter_width = 5,
+    .pix_map = {
+    0, 1, 1, 1, 0,
+    1, 0, 0, 1, 0,
+    1, 0, 1, 1, 0,
+    1, 0, 1, 1, 0,
+    1, 0, 0, 0, 0,
+    0, 1, 1, 1, 1,
+    },
+};
+
+Letter rbracket = {
+    .letter_width = 2,
+    .pix_map = {
+    1, 1,
+    0, 1,
+    0, 1,
+    0, 1,
+    0, 1,
+    1, 1,
+    },
+};
+
+Letter lbracket = {
+    .letter_width = 2,
+    .pix_map = {
+    1, 1,
+    1, 0,
+    1, 0,
+    1, 0,
+    1, 0,
+    1, 1,
+    },
+};
+
+Letter hat = {
+    .letter_width = 3,
+    .pix_map = {
+    0, 1, 0,
+    1, 1, 1,
+    1, 0, 1,
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0,
+    },
+};
+
+Letter grave = {
+    .letter_width = 2,
+    .pix_map = {
+    1, 1, 
+    0, 1, 
+    0, 0,
+    0, 0,
+    0, 0,
+    0, 0,
+    },
+};
+
+Letter rtub = {
+    .letter_width = 3,
+    .pix_map = {
+    1, 0, 0,
+    0, 1, 0,
+    0, 1, 1,
+    0, 1, 1,
+    0, 1, 0,
+    1, 0, 0,
+    },
+};
+
+Letter tilde = {
+    .letter_width = 4,
+    .pix_map = {
+    0, 0, 0, 0,
+    0, 1, 0, 1,
+    1, 1, 1, 1,
+    1, 0, 1, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    },
+};
+
+
+
+//----------------//
+// Specials above //
+//----------------//
+
+Letter ASCII[] = {
+    // '\0', 
+    undef, 
+    // 'start of heading'
+    undef,
+    // 'start of text'
+    undef,
+    // 'end of text'
+    undef,
+    // 'end of transmission'
+    undef,
+    // 'enquiry'
+    undef,
+    // 'acknowledge'
+    undef,
+    // 'bell'
+    undef,
+    // 'backspace'
+    undef,
+    // 'horizontal tab'
+    empty,
+    // 'NL line feed, new line'
+    empty,
+    // 'vertical tab'
+    undef,
+    // 'NP form feed, new page'
+    empty,
+    // 'carraige return'
+    empty,
+    // 'shift out'
+    undef,
+    // 'shift in'
+    undef,
+    // 'data link escape'
+    undef,
+    // 'device control 1'
+    undef,
+    // 'device control 2'
+    undef,
+    // 'device control 3'
+    undef,
+    // 'device control 4'
+    undef,
+    // 'negative acknowledge'
+    undef,
+    // 'synchronous idle'
+    undef,
+    // 'end of trans, block'
+    undef,
+    // 'cancel'
+    undef,
+    // 'end of medium'
+    undef,
+    // 'substitute'
+    undef,
+    // 'escape'
+    undef,
+    // 'file separator'
+    undef,
+    // 'group seperator'
+    undef,
+    // 'record seperator'
+    undef,
+    // 'unit seperator'
+    undef,
+    //----------------//
+    // SPECIALS BELOW //
+    //----------------//
+    space,
+    bang,
+    quotes,
+    hash,
+    dollar,
+    precentage,
+    and_sign,
+    single_quote,
+    lparen,
+    rparen,
+    star,
+    plus,
+    comma,
+    dash,
+    dot,
+    slash,
+    //---------------//
+    // NUMBERS BELOW //
+    //---------------//
+    zero,
+    one,
+    two,
+    three,
+    four,
+    five,
+    six,
+    seven,
+    eight,
+    nine,
+    //----------------//
+    // SPECIALS BELOW //
+    //----------------//
+    colon,
+    semi_colon,
+    gt,
+    eq,
+    lt,
+    question_mark,
+    at,
+    //-----------------------//
+    // CAPITAL LETTERS BELOW //
+    //-----------------------//
+    // TODO: Capital letters
+    a, b, c, d, e, f, g,
+    h, i, j, k, l, m, n,
+    o, p, q, r, s, t, u,
+    v, w, x, y, z,
+    //----------------//
+    // SPECIALS BELOW //
+    //----------------//
+    lbracket,
+    back_slash,
+    rbracket,
+    hat,
+    underscore,
+    grave,
+    //---------------//
+    // LETTERS BELOW //
+    //---------------//
+    a, b, c, d, e, f, g,
+    h, i, j, k, l, m, n,
+    o, p, q, r, s, t, u,
+    v, w, x, y, z,
+    //----------------//
+    // SPECIALS BELOW //
+    //----------------//
+    ltub,
+    line,
+    rtub,
+    tilde,
+    // 'DEL'
+    undef,
+};
 
 #endif //FONT_HPP

@@ -155,6 +155,10 @@ void scr_frontmap(int fd)
 
 void clear(int fd)
 {
+    /*
+    memset(frontstore, 0, sizeof(frontstore));
+    scr_frontmap(fd);
+    */
     int x, y;
     for(y = 0; y < YSIZE; y++) {
 		for(x = 0; x < XSIZE; x++) {
@@ -189,17 +193,32 @@ void reset_tty(void)
 }
 
 // Function, which renders a single letter 'l' at char_y, char_x
-void put_letter(int char_y, int char_x, Letter l)
+void put_letter(int char_y, int scroll_x, int char_x, Letter l)
 {
     int x, y;
-    for(x = 0; x < l.letter_width; x++)
+    for(x = scroll_x; x < l.letter_width; x++)
     {
         for(y = 0; y < LETTER_HEIGHT; y++)
         {
-            sfpix(char_y + y, char_x + x, l.pix_map[y*l.letter_width + x] & 1);
+            sfpix(char_y + y, char_x + x, l.pix_map[y*l.letter_width + x + scroll_x] & 1);
         }
     }
 }
+
+
+// Function, which renders a single letter 'l' at char_y, char_x
+void put_letter2(int char_y, int scroll_x, int char_x, Letter l)
+{
+    int x, y;
+    for(x = 0; x < l.letter_width - scroll_x; x++)
+    {
+        for(y = 0; y < LETTER_HEIGHT; y++)
+        {
+            sfpix(char_y + y, char_x + x, l.pix_map[y*l.letter_width + x + scroll_x] & 1);
+        }
+    }
+}
+
 
 // Look up a pixel letter, via a character
 Letter find_letter(char c)
@@ -212,72 +231,97 @@ Letter find_letter(char c)
     return ASCII[c];
 }
 
-// A list of old string
-std::list<std::string> old_lines;
-
-void render_screen(int fd, std::string str)
+struct scroll_string
 {
-    // Clear the screen
-    memset(frontstore, 0, sizeof(frontstore));
+    std::string str;
+    int line;
+    int scroll_pos = 0;
+    int scroll_dir = 1;
+    int delay = 0;
+};
 
-    auto render_string = [](std::string str, int start_line)
+scroll_string strings[3];
+
+void scroller(int fd)
+{
+    memset(frontstore, 0, sizeof(frontstore));
+    
+    auto render_string = [](std::string str, int start_line, int scroll_x)
     {
+        str.append("     ");
         // The start line, and start x coordinate
         int line = start_line;
-        int char_x = 1;
+        int char_x = scroll_x == 0 ? 1 : 0;
         // Run the entire string, char by char
         for(char& c : str)
         {
             // Find the pixel letter corresponding to the char
             Letter l = find_letter(c);
 
+            if(l.letter_width/2 < scroll_x)
+            {
+                scroll_x -= (l.letter_width/2);
+                continue;
+            }
+            // We may still need to print a half character
+
             // If we overflow this line, by adding it, do a line break
             if(char_x + l.letter_width >= YSIZE)
             {
-                char_x = 1;
-                line++;
-                // If we overflow the screen, skip the rest of the string
-                if(line > 2)
-                {
-                    break;
-                }
+                return true;
             }
 
             // Calculate our y coord, based upon the line, we're in
             int char_y = 0 + line * (LETTER_HEIGHT + 1);
             // Do the actual printing of the character
-            put_letter(char_y, char_x, l);
+            put_letter(char_y, scroll_x, char_x, l);
             // Move the size of this letter, and 1 character,
             // before rendering the next character
             char_x += l.letter_width;
             char_x += 1;
+
+            scroll_x = std::max(scroll_x - (l.letter_width + 1), 0);
         }
-        // People who start on the line after us
-        return line+1;
+        return false;
     };
-    // Write the new string
-    int end_line = render_string(str, 0);
-    // If the new string did not take up all the space,
-    // lets reload some of the old stuff, and draw that
-    for(std::string old : old_lines)
+
+    for(scroll_string& s : strings)
     {
-        // Only draw, if we're inside the screen
-        if(end_line > 2)
+        bool overflow = render_string(s.str, s.line, s.scroll_pos);
+        if(overflow == false && s.scroll_dir == 1)
         {
-            break;
+            s.scroll_dir = -1;
+            s.delay = 10;
         }
-        end_line = render_string(old, end_line);
-    }
-    // The string we just rendered, is now an old line
-    old_lines.push_front(str);
-    // Garbage collect old_lines
-    while(old_lines.size() > 3)
-    {
-        old_lines.pop_back();
+
+        if(s.delay == 0)
+        {
+            s.scroll_pos += 1 * s.scroll_dir;
+        }
+        else
+        {
+            s.delay--;
+        }
+
+        if(s.scroll_pos < 0)
+        {
+            s.scroll_dir = 1;
+            s.scroll_pos = 0;
+            s.delay = 10;
+        }
     }
 
     // Render!
     scr_frontmap(fd);
+}
+
+void set_string(std::string str, int line)
+{
+    scroll_string s;
+    s.str = str;
+    s.line = line;
+
+    strings[line] = s;
 }
 
 int main(int argc, char *argv[])
@@ -364,7 +408,14 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-            render_screen(fd, buffer);
+            set_string(" 0 1 2 3 4 5 6 7 8 9 [ \\ ] ^ _ ` { | } ~ ", 0);
+            set_string(" a b c d e f g h i j k l m o p q r t s t u v w x y z ", 1);
+            set_string(" ! \" # $ % & ' ( ) * + , - . / : ; < = > ? @ ", 2);
+            while(true)
+            {
+                usleep(100);
+                scroller(fd);
+            }
         }
 
         if(FD_ISSET(pfd[0], &fds)) {

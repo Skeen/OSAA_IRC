@@ -67,6 +67,7 @@ char backstore[YSIZE][XSIZE];
 char frontstore[YSIZE][XSIZE];
 
 volatile bool quit = false;
+int fd;
 int pfd[2];
 struct termios orig_termios;
 
@@ -180,11 +181,15 @@ static void sighandler(int sig)
 	quit = true;
 }
 
+void scroller(int fd);
+
 static void sigalrm(int sig)
 {
 	char c = 0;
 	(void)sig;
 	xwrite(pfd[1], &c, 1);
+
+    scroller(fd);
 }
 
 void reset_tty(void)
@@ -315,6 +320,12 @@ void scroller(int fd)
     scr_frontmap(fd);
 }
 
+void set_string(scroll_string s, int line)
+{
+    s.line = line;
+    strings[line] = s;
+}
+
 void set_string(std::string str, int line)
 {
     scroll_string s;
@@ -326,7 +337,6 @@ void set_string(std::string str, int line)
 
 int main(int argc, char *argv[])
 {
-	int fd;
 	int optc;
 	char *serial_port = NULL;
 
@@ -408,14 +418,9 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 
-            set_string(" 0 1 2 3 4 5 6 7 8 9 [ \\ ] ^ _ ` { | } ~ ", 0);
-            set_string(" a b c d e f g h i j k l m o p q r t s t u v w x y z ", 1);
-            set_string(" ! \" # $ % & ' ( ) * + , - . / : ; < = > ? @ ", 2);
-            while(true)
-            {
-                usleep(100);
-                scroller(fd);
-            }
+            set_string(strings[1], 0);
+            set_string(strings[2], 1);
+            set_string(buffer, 2);
         }
 
         if(FD_ISSET(pfd[0], &fds)) {
